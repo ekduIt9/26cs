@@ -362,6 +362,18 @@ Remove-Item -LiteralPath apps/web/.next -Recurse -Force
 
 Không xóa mã nguồn trong `apps/web/src`.
 
+### Không resolve được `leaflet` hoặc `leaflet/dist/leaflet.css`
+
+Lỗi này xảy ra khi code đã được cập nhật nhưng dependency trong `apps/web/node_modules` vẫn là bản cũ. Dừng web rồi chạy từ thư mục gốc:
+
+```bash
+git pull origin main
+npm ci --prefix apps/web
+npm run dev:web
+```
+
+Project đã đặt `turbopack.root` tại `apps/web` để Next.js luôn resolve Leaflet từ đúng thư mục, kể cả khi repository có nhiều `package-lock.json`.
+
 ### Expo Go không kết nối được
 
 - Xác nhận điện thoại và máy tính cùng Wi-Fi.
