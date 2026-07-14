@@ -1,0 +1,13 @@
+node_modules/
+.next/
+.expo/
+.playwright-cli/
+dist/
+.env
+.env.local
+*.log
+.tools/node-*/
+.tools/*.zip
+apps/*/node_modules/
+apps/*/.next/
+apps/*/.expo/

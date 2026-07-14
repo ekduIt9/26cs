@@ -1,0 +1,4 @@
+interface:
+  display_name: "Shuttle Service Manager"
+  short_description: "Build booking and live vehicle tracking"
+  default_prompt: "Use $manage-shuttle-service to implement the next verified MVP feature for this shuttle booking and live tracking application."

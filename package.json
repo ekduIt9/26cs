@@ -1,0 +1,18 @@
+{
+  "name": "lo-trinh",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev:web": "npm --prefix apps/web run dev",
+    "build:web": "npm --prefix apps/web run build",
+    "lint:web": "npm --prefix apps/web run lint",
+    "test:web": "npm --prefix apps/web run test",
+    "typecheck:web": "npm --prefix apps/web run typecheck",
+    "typecheck:driver": "npm --prefix apps/driver exec -- tsc -p apps/driver/tsconfig.json --noEmit",
+    "start:driver": "npm --prefix apps/driver run start",
+    "check": "npm run lint:web && npm run typecheck:web && npm run test:web && npm run typecheck:driver && npm run build:web"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}
