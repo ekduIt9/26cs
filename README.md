@@ -14,7 +14,7 @@
 | Thành phần | Công nghệ |
 |---|---|
 | Web khách hàng/chủ xe | Next.js 16, React 19, TypeScript, Tailwind CSS 4 |
-| Ứng dụng tài xế | Expo SDK 57, React Native 0.86, TypeScript |
+| Ứng dụng tài xế | Expo SDK 54, React Native 0.81, TypeScript |
 | Backend dự kiến | Supabase Auth, PostgreSQL, Realtime và RLS |
 | Kiểm thử web | Vitest, ESLint, TypeScript |
 | Runtime | Node.js 24 LTS |
