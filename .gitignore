@@ -7,6 +7,8 @@ dist/
 .env.local
 *.log
 .tools/node-*/
+.tools/bin/
+.tools/LICENSE
 .tools/*.zip
 apps/*/node_modules/
 apps/*/.next/
