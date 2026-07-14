@@ -7,13 +7,13 @@
 - Ứng dụng tài xế để xem chuyến và cập nhật trạng thái hành trình.
 - Schema Supabase cho tài khoản, chuyến đi, lịch sử trạng thái và vị trí xe.
 
-> Trạng thái hiện tại: web và ứng dụng tài xế vẫn dùng dữ liệu đặt chuyến demo. Web đã hỗ trợ Google Maps và Routes API thật khi có API key; GPS xe, đăng nhập và đồng bộ Supabase chưa được kết nối.
+> Trạng thái hiện tại: web và ứng dụng tài xế vẫn dùng dữ liệu đặt chuyến demo. Web đã có bản đồ và tuyến đường thật bằng dịch vụ OpenStreetMap miễn phí, không cần API key; GPS xe, đăng nhập và đồng bộ Supabase chưa được kết nối.
 
 ## 1. Công nghệ
 
 | Thành phần | Công nghệ |
 |---|---|
-| Web khách hàng/chủ xe | Next.js 16, React 19, TypeScript, Tailwind CSS 4, Google Maps JavaScript API |
+| Web khách hàng/chủ xe | Next.js 16, React 19, TypeScript, Tailwind CSS 4, Leaflet và OpenStreetMap |
 | Ứng dụng tài xế | Expo SDK 54, React Native 0.81, TypeScript |
 | Backend dự kiến | Supabase Auth, PostgreSQL, Realtime và RLS |
 | Kiểm thử web | Vitest, ESLint, TypeScript |
@@ -48,7 +48,7 @@ Tùy chọn:
 
 - Android Studio nếu muốn chạy Android Emulator.
 - Tài khoản Supabase nếu muốn áp dụng schema database.
-- Tài khoản Google Maps Platform để hiển thị bản đồ và lộ trình thật.
+- Máy có kết nối internet để tải bản đồ OpenStreetMap và tính lộ trình.
 
 ## 4. Chuẩn bị Node.js
 
@@ -125,7 +125,7 @@ Luồng demo có thể kiểm tra:
 4. Chuyển sang vai trò **Chủ xe** trên thanh điều hướng.
 5. Kiểm tra yêu cầu vừa tạo và nhấn **Xác nhận**.
 
-Dữ liệu đặt chuyến demo chỉ được giữ trong bộ nhớ trình duyệt. Tải lại trang sẽ khôi phục dữ liệu mẫu ban đầu. Bản đồ và thông số lộ trình được lấy từ Google khi đã cấu hình API key.
+Dữ liệu đặt chuyến demo chỉ được giữ trong bộ nhớ trình duyệt. Tải lại trang sẽ khôi phục dữ liệu mẫu ban đầu. Bản đồ và thông số lộ trình được lấy từ OpenStreetMap/Nominatim/OSRM mà không cần API key.
 
 ### Chạy web bằng cổng khác
 
@@ -205,7 +205,9 @@ Các biến hiện có:
 ```dotenv
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
+NEXT_PUBLIC_OSM_TILE_URL=https://tile.openstreetmap.org/{z}/{x}/{y}.png
+NEXT_PUBLIC_NOMINATIM_URL=https://nominatim.openstreetmap.org
+NEXT_PUBLIC_OSRM_URL=https://router.project-osrm.org
 EXPO_PUBLIC_SUPABASE_URL=
 EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 ```
@@ -216,35 +218,28 @@ EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | URL Supabase cho web |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Publishable key Supabase cho web |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Maps JavaScript API và Routes API cho web |
+| `NEXT_PUBLIC_OSM_TILE_URL` | Máy chủ ảnh bản đồ OpenStreetMap; có giá trị mặc định miễn phí |
+| `NEXT_PUBLIC_NOMINATIM_URL` | Dịch vụ chuyển địa chỉ thành tọa độ; có giá trị mặc định miễn phí |
+| `NEXT_PUBLIC_OSRM_URL` | Dịch vụ tính tuyến đường ô tô; có giá trị mặc định miễn phí |
 | `EXPO_PUBLIC_SUPABASE_URL` | URL Supabase cho ứng dụng tài xế |
 | `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Publishable key Supabase cho ứng dụng tài xế |
 
 Không đưa `service_role` key, khóa bí mật hoặc thông tin khách hàng thật vào biến có tiền tố `NEXT_PUBLIC_` hay `EXPO_PUBLIC_`, vì các biến này có thể xuất hiện trong client bundle.
 
-Có thể để trống các biến Supabase trong giai đoạn demo. Nếu thiếu `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`, web vẫn chạy nhưng vùng bản đồ sẽ hiển thị hướng dẫn cấu hình thay vì lộ trình giả.
+Có thể để trống các biến Supabase trong giai đoạn demo. Ba biến bản đồ cũng không bắt buộc vì ứng dụng có sẵn endpoint công cộng mặc định.
 
-### Cấu hình Google Maps và lộ trình thật
+### Bản đồ và lộ trình miễn phí
 
-1. Tạo hoặc chọn một project trong Google Cloud Console và bật billing cho project.
-2. Bật **Maps JavaScript API** và **Routes API**.
-3. Tạo API key, chọn giới hạn ứng dụng **Websites (HTTP referrers)** và thêm các địa chỉ được phép, ví dụ:
+Ứng dụng sử dụng:
 
-```text
-http://localhost:3000/*
-https://ten-mien-cua-ban.vn/*
-```
+- **Leaflet** để hiển thị bản đồ tương tác.
+- **OpenStreetMap** để tải lớp bản đồ.
+- **Nominatim** để tìm tọa độ từ địa chỉ.
+- **OSRM** để tính tuyến đường ô tô, quãng đường và thời gian dự kiến.
 
-4. Giới hạn API key chỉ được gọi **Maps JavaScript API** và **Routes API**.
-5. Tạo file `apps/web/.env.local` và điền key:
+Nhập điểm đón và điểm đến rồi nhấn **Tính lộ trình** trên bản đồ. Nên nhập đủ số nhà, đường, phường/xã và tỉnh/thành. Ứng dụng chỉ tìm địa chỉ khi người dùng bấm nút, lưu cache kết quả trong phiên và giới hạn các yêu cầu Nominatim cách nhau ít nhất 1,1 giây.
 
-```dotenv
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_restricted_browser_key
-```
-
-6. Dừng và chạy lại `npm run dev:web`. Các biến `NEXT_PUBLIC_` được đóng gói vào client khi build nên thay đổi file môi trường luôn cần khởi động lại web.
-
-Sau khi người dùng ngừng nhập điểm đón và điểm đến khoảng 0,9 giây, web tính tuyến lái xe có xét giao thông hiện tại, vẽ đường đi, đồng thời cập nhật quãng đường và thời gian dự kiến. Nên nhập địa chỉ đủ số nhà, đường, phường/xã và tỉnh/thành để Google định vị chính xác hơn.
+Các endpoint công cộng không yêu cầu tài khoản hoặc API key và phù hợp cho MVP một xe với lưu lượng thấp. Chúng hoạt động theo cơ chế best-effort, không có SLA và có thể giới hạn truy cập nếu sử dụng nhiều. Khi đưa vào vận hành lớn hơn, thay các biến `NEXT_PUBLIC_OSM_TILE_URL`, `NEXT_PUBLIC_NOMINATIM_URL` và `NEXT_PUBLIC_OSRM_URL` bằng dịch vụ tự host hoặc nhà cung cấp phù hợp rồi build lại web.
 
 ## 9. Khởi tạo Supabase
 
@@ -384,7 +379,7 @@ Cảnh báo dependency không đồng nghĩa ứng dụng không chạy. Kiểm 
 - Ghi/đọc yêu cầu đặt chuyến từ PostgreSQL.
 - Supabase Realtime cho vị trí mới nhất.
 - Expo background location.
-- Google Places Autocomplete để chọn địa chỉ theo Place ID chính xác hơn.
+- Dịch vụ geocoding/routing tự host hoặc có SLA khi số lượng xe và khách tăng.
 - Thông báo đẩy, SMS hoặc Zalo.
 - Thanh toán và xác nhận chuyển khoản.
 
