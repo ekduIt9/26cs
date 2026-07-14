@@ -2,6 +2,8 @@
 
 import { FormEvent, useMemo, useState } from "react";
 
+import { TripRouteMap } from "./trip-route-map";
+
 type Role = "customer" | "owner";
 type RequestStatus = "Chờ báo giá" | "Đã xác nhận";
 
@@ -158,14 +160,7 @@ function CustomerView({ from, to, passengers, setFrom, setTo, setPassengers, onS
           <p className="form-note">Chưa phát sinh thanh toán. Chủ xe sẽ kiểm tra lịch và gửi báo giá.</p>
         </form>
 
-        <aside className="map-card" aria-label="Bản đồ tuyến đường mô phỏng">
-          <div className="map-label">BẢN ĐỒ MÔ PHỎNG</div>
-          <div className="map-road road-one"/><div className="map-road road-two"/><div className="map-road road-three"/>
-          <div className="route-line"><span className="route-start"/><span className="route-end"><Icon name="pin" size={16}/></span></div>
-          <div className="place-label start-label">Quận 3<small>Điểm đón</small></div>
-          <div className="place-label end-label">Hồ Tràm<small>Điểm đến</small></div>
-          <div className="distance-card"><div><span><Icon name="route"/></span><div><small>QUÃNG ĐƯỜNG DỰ KIẾN</small><strong>112 km</strong></div></div><div><small>THỜI GIAN</small><strong>2 giờ 25 phút</strong></div></div>
-        </aside>
+        <TripRouteMap origin={from} destination={to}/>
       </section>
 
       <section className="upcoming-section">
